@@ -1,0 +1,146 @@
+import { Meal } from '@/types/meal';
+
+export const sampleMeals: Meal[] = [
+  {
+    id: '1',
+    name: 'Avocado Toast with Poached Egg',
+    description: 'A healthy and delicious breakfast with creamy avocado and perfectly poached egg',
+    image: 'https://images.pexels.com/photos/566566/pexels-photo-566566.jpeg',
+    cookingTime: 15,
+    difficulty: 'Easy',
+    servings: 1,
+    calories: 380,
+    role: ['breakfast'],
+    aim: ['normal', 'diet'],
+    ingredients: [
+      { name: 'Bread slice', amount: '2', unit: 'slices' },
+      { name: 'Avocado', amount: '1', unit: 'medium' },
+      { name: 'Egg', amount: '1', unit: 'large' },
+      { name: 'Lemon juice', amount: '1', unit: 'tbsp' },
+      { name: 'Salt', amount: '1', unit: 'pinch' },
+      { name: 'Black pepper', amount: '1', unit: 'pinch' }
+    ],
+    instructions: [
+      'Toast the bread slices until golden brown',
+      'Mash the avocado with lemon juice, salt, and pepper',
+      'Bring water to boil and poach the egg for 3-4 minutes',
+      'Spread avocado mixture on toast',
+      'Top with poached egg and season with pepper'
+    ],
+    tags: ['healthy', 'quick', 'protein']
+  },
+  {
+    id: '2',
+    name: 'Grilled Chicken Salad',
+    description: 'Fresh and protein-packed salad perfect for lunch',
+    image: 'https://images.pexels.com/photos/2097090/pexels-photo-2097090.jpeg',
+    cookingTime: 25,
+    difficulty: 'Medium',
+    servings: 2,
+    calories: 420,
+    role: ['lunch', 'dinner'],
+    aim: ['diet', 'normal'],
+    ingredients: [
+      { name: 'Chicken breast', amount: '300', unit: 'g' },
+      { name: 'Mixed greens', amount: '150', unit: 'g' },
+      { name: 'Cherry tomatoes', amount: '200', unit: 'g' },
+      { name: 'Cucumber', amount: '1', unit: 'medium' },
+      { name: 'Olive oil', amount: '2', unit: 'tbsp' },
+      { name: 'Balsamic vinegar', amount: '1', unit: 'tbsp' }
+    ],
+    instructions: [
+      'Season chicken breast with salt and pepper',
+      'Grill chicken for 6-8 minutes per side',
+      'Let chicken rest and slice thinly',
+      'Mix greens, tomatoes, and cucumber',
+      'Whisk olive oil and balsamic vinegar',
+      'Assemble salad and top with chicken'
+    ],
+    tags: ['protein', 'fresh', 'low-carb']
+  },
+  {
+    id: '3',
+    name: 'Protein Smoothie Bowl',
+    description: 'Nutrient-dense smoothie bowl perfect for muscle building',
+    image: 'https://images.pexels.com/photos/1092730/pexels-photo-1092730.jpeg',
+    cookingTime: 10,
+    difficulty: 'Easy',
+    servings: 1,
+    calories: 550,
+    role: ['breakfast', 'snack'],
+    aim: ['bulk', 'normal'],
+    ingredients: [
+      { name: 'Protein powder', amount: '30', unit: 'g' },
+      { name: 'Banana', amount: '1', unit: 'large' },
+      { name: 'Blueberries', amount: '100', unit: 'g' },
+      { name: 'Almond milk', amount: '200', unit: 'ml' },
+      { name: 'Granola', amount: '30', unit: 'g' },
+      { name: 'Chia seeds', amount: '1', unit: 'tbsp' }
+    ],
+    instructions: [
+      'Blend protein powder, banana, half blueberries, and almond milk',
+      'Pour into bowl',
+      'Top with remaining blueberries, granola, and chia seeds',
+      'Serve immediately'
+    ],
+    tags: ['high-protein', 'antioxidants', 'filling']
+  },
+  {
+    id: '4',
+    name: 'Salmon with Quinoa',
+    description: 'Perfectly grilled salmon with fluffy quinoa and vegetables',
+    image: 'https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg',
+    cookingTime: 30,
+    difficulty: 'Medium',
+    servings: 2,
+    calories: 480,
+    role: ['lunch', 'dinner'],
+    aim: ['normal', 'diet', 'bulk'],
+    ingredients: [
+      { name: 'Salmon fillet', amount: '400', unit: 'g' },
+      { name: 'Quinoa', amount: '150', unit: 'g' },
+      { name: 'Broccoli', amount: '200', unit: 'g' },
+      { name: 'Lemon', amount: '1', unit: 'medium' },
+      { name: 'Olive oil', amount: '2', unit: 'tbsp' },
+      { name: 'Garlic', amount: '2', unit: 'cloves' }
+    ],
+    instructions: [
+      'Cook quinoa according to package instructions',
+      'Season salmon with salt, pepper, and lemon juice',
+      'Grill salmon for 4-5 minutes per side',
+      'Steam broccoli until tender',
+      'Sauté garlic in olive oil',
+      'Serve salmon over quinoa with broccoli'
+    ],
+    tags: ['omega-3', 'complete-protein', 'healthy-fats']
+  },
+  {
+    id: '5',
+    name: 'Vegan Buddha Bowl',
+    description: 'Colorful and nutritious plant-based meal',
+    image: 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg',
+    cookingTime: 35,
+    difficulty: 'Medium',
+    servings: 2,
+    calories: 450,
+    role: ['lunch', 'dinner'],
+    aim: ['vegan', 'diet', 'normal'],
+    ingredients: [
+      { name: 'Chickpeas', amount: '200', unit: 'g' },
+      { name: 'Sweet potato', amount: '200', unit: 'g' },
+      { name: 'Spinach', amount: '100', unit: 'g' },
+      { name: 'Avocado', amount: '1', unit: 'medium' },
+      { name: 'Tahini', amount: '2', unit: 'tbsp' },
+      { name: 'Lemon juice', amount: '2', unit: 'tbsp' }
+    ],
+    instructions: [
+      'Roast cubed sweet potato with olive oil and spices',
+      'Sauté chickpeas with garlic and herbs',
+      'Massage spinach with lemon juice',
+      'Make tahini dressing with lemon and water',
+      'Arrange all components in a bowl',
+      'Drizzle with tahini dressing'
+    ],
+    tags: ['plant-based', 'fiber-rich', 'colorful']
+  }
+];
