@@ -3,13 +3,13 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, Clock, Flame, MessageCircle, Users } from 'lucide-react-native';
 import React from 'react';
 import {
-    Image,
-    SafeAreaView,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
+  Image,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function RecipeScreen() {
   const { id } = useLocalSearchParams();

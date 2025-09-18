@@ -3,15 +3,15 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, Bot, Send, User } from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
-    KeyboardAvoidingView,
-    Platform,
-    SafeAreaView,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface Message {
   id: string;

@@ -1,7 +1,8 @@
 import { useAsyncStorage } from '@/hooks/useAsyncStorage';
 import { MealAim, MealRole, UserPreferences } from '@/types/meal';
 import React from 'react';
-import { SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const mealRoles: { key: MealRole; label: string }[] = [
   { key: 'breakfast', label: 'Breakfast' },

@@ -4,7 +4,8 @@ import { useAsyncStorage } from '@/hooks/useAsyncStorage';
 import { Meal, UserPreferences } from '@/types/meal';
 import { router } from 'expo-router';
 import React, { useMemo } from 'react';
-import { SafeAreaView, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
   const { storedValue: preferences } = useAsyncStorage<UserPreferences>('userPreferences', {
@@ -58,7 +59,6 @@ export default function HomeScreen() {
           </Text>
         </View>
 
-        <View className="flex-1">
           {filteredMeals.length > 0 ? (
             <SwipeableCards
               meals={filteredMeals}
@@ -77,12 +77,11 @@ export default function HomeScreen() {
           )}
         </View>
 
-        <View className="px-6 pb-2">
+        {/* <View className="px-6 pb-2">
           <Text className="text-center text-sm text-gray-500">
             {filteredMeals.length} meals available with your preferences
           </Text>
-        </View>
-      </View>
+        </View> */}
     </SafeAreaView>
   );
 }

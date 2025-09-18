@@ -3,7 +3,8 @@ import { useAsyncStorage } from '@/hooks/useAsyncStorage';
 import { router } from 'expo-router';
 import { Clock, Flame, Users } from 'lucide-react-native';
 import React from 'react';
-import { Image, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function FavoritesScreen() {
   const { storedValue: favoriteMealIds } = useAsyncStorage<string[]>('favoriteMeals', []);

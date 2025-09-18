@@ -3,12 +3,12 @@ import React, { useState } from 'react';
 import { Dimensions, StyleSheet, Text, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
-    interpolate,
-    runOnJS,
-    useAnimatedStyle,
-    useSharedValue,
-    withSpring,
-    withTiming,
+  interpolate,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
 } from 'react-native-reanimated';
 import { MealCard } from './MealCard';
 
@@ -32,6 +32,26 @@ export function SwipeableCards({ meals, onSwipeLeft, onSwipeRight }: SwipeableCa
 
   const nextCardScale = useSharedValue(0.9);
   const nextCardOpacity = useSharedValue(0.7);
+
+  const handleSwipe = (isLeft: boolean) => {
+    const meal = meals[currentIndex];
+    if (!meal) return;
+
+    if (isLeft) {
+      onSwipeLeft(meal);
+    } else {
+      onSwipeRight(meal);
+    }
+
+    // Move to next card and reset animations
+    setCurrentIndex((prev) => prev + 1);
+    translateX.value = 0;
+    translateY.value = 0;
+    rotate.value = 0;
+    scale.value = 1;
+    nextCardScale.value = 0.9;
+    nextCardOpacity.value = 0.7;
+  };
 
   const panGesture = Gesture.Pan()
     .onStart(() => {
@@ -62,23 +82,8 @@ export function SwipeableCards({ meals, onSwipeLeft, onSwipeRight }: SwipeableCa
         rotate.value = withTiming(shouldSwipeLeft ? -30 : 30, { duration: 300 });
         scale.value = withTiming(0.8, { duration: 300 });
 
-        runOnJS(() => {
-          if (shouldSwipeLeft) {
-            onSwipeLeft(meals[currentIndex]);
-          } else {
-            onSwipeRight(meals[currentIndex]);
-          }
-
-          setTimeout(() => {
-            setCurrentIndex((prev) => prev + 1);
-            translateX.value = 0;
-            translateY.value = 0;
-            rotate.value = 0;
-            scale.value = 1;
-            nextCardScale.value = 0.9;
-            nextCardOpacity.value = 0.7;
-          }, 50);
-        })();
+        // Pass boolean into JS safely
+        runOnJS(handleSwipe)(shouldSwipeLeft);
       } else {
         translateX.value = withSpring(0);
         translateY.value = withSpring(0);
@@ -105,14 +110,10 @@ export function SwipeableCards({ meals, onSwipeLeft, onSwipeRight }: SwipeableCa
 
   if (currentIndex >= meals.length) {
     return (
-      <View style={styles.container} className="items-center justify-center">
-        <View className="bg-white rounded-3xl p-8 shadow-lg">
-          <Text className="text-xl font-bold text-gray-900 text-center mb-2">
-            🎉 All done!
-          </Text>
-          <Text className="text-gray-600 text-center">
-            You&apos;ve seen all available meals
-          </Text>
+      <View style={styles.container}>
+        <View style={styles.doneBox}>
+          <Text style={styles.doneTitle}>🎉 All done!</Text>
+          <Text style={styles.doneSubtitle}>You&apos;ve seen all available meals</Text>
         </View>
       </View>
     );
@@ -139,10 +140,7 @@ export function SwipeableCards({ meals, onSwipeLeft, onSwipeRight }: SwipeableCa
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 20,
+    backgroundColor: '#F3F4F6', // soft gray bg
   },
   currentCard: {
     zIndex: 2,
@@ -150,5 +148,26 @@ const styles = StyleSheet.create({
   nextCard: {
     position: 'absolute',
     zIndex: 1,
+  },
+  doneBox: {
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  doneTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#111827',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  doneSubtitle: {
+    fontSize: 14,
+    color: '#4B5563',
+    textAlign: 'center',
   },
 });
