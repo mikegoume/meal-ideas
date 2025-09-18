@@ -63,7 +63,7 @@ export function SwipeableCards({ meals, onSwipeLeft, onSwipeRight }: SwipeableCa
       rotate.value = interpolate(
         event.translationX,
         [-screenWidth / 2, 0, screenWidth / 2],
-        [-15, 0, 15]
+        [-15, 0, 15],
       );
 
       const progress = Math.abs(event.translationX) / SWIPE_THRESHOLD;
