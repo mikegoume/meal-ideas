@@ -1,173 +1,184 @@
 import { Meal } from '@/types/meal';
-import React, { useState } from 'react';
-import { Dimensions, StyleSheet, Text, View } from 'react-native';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Animated, {
-  interpolate,
-  runOnJS,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming,
-} from 'react-native-reanimated';
+import React, { useRef } from 'react';
+import { Dimensions, Image, PanResponder, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Easing, runOnJS, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 import { MealCard } from './MealCard';
 
 const { width: screenWidth } = Dimensions.get('window');
 const CARD_WIDTH = screenWidth - 40;
 const SWIPE_THRESHOLD = CARD_WIDTH * 0.25;
+const SWIPE_OUT_DURATION = 250;
+const RESET_DURATION = 300;
 
 interface SwipeableCardsProps {
   meals: Meal[];
+  setMeals: React.Dispatch<React.SetStateAction<Meal[]>>;
   onSwipeLeft: (meal: Meal) => void;
   onSwipeRight: (meal: Meal) => void;
 }
 
-export function SwipeableCards({ meals, onSwipeLeft, onSwipeRight }: SwipeableCardsProps) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-
+export function SwipeableCards({
+  meals,
+  setMeals,
+  onSwipeLeft,
+  onSwipeRight,
+}: SwipeableCardsProps) {
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
-  const rotate = useSharedValue(0);
-  const scale = useSharedValue(1);
 
+  const dummyTranslate = useSharedValue(0);
   const nextCardScale = useSharedValue(0.9);
   const nextCardOpacity = useSharedValue(0.7);
 
-  const handleSwipe = (isLeft: boolean) => {
-    const meal = meals[currentIndex];
-    if (!meal) return;
+  const onSwipeComplete = () => {
+    if (meals.length > 0) {
+      setMeals((prev) => prev.slice(1));
+      translateX.value = 0;
+      translateY.value = 0;
 
-    if (isLeft) {
-      onSwipeLeft(meal);
+      nextCardScale.value = 0.9;
+      nextCardScale.value = withDelay(100, withTiming(0.9, { duration: 400, easing: Easing.exp }));
     } else {
-      onSwipeRight(meal);
+      resetPosition();
     }
-
-    // Move to next card and reset animations
-    setCurrentIndex((prev) => prev + 1);
-    translateX.value = 0;
-    translateY.value = 0;
-    rotate.value = 0;
-    scale.value = 1;
-    nextCardScale.value = 0.9;
-    nextCardOpacity.value = 0.7;
   };
 
-  const panGesture = Gesture.Pan()
-    .onStart(() => {
-      scale.value = withSpring(1.05);
-    })
-    .onUpdate((event) => {
-      translateX.value = event.translationX;
-      translateY.value = event.translationY * 0.1;
-      rotate.value = interpolate(
-        event.translationX,
-        [-screenWidth / 2, 0, screenWidth / 2],
-        [-15, 0, 15],
-      );
+  const handleLike = () => {
+    forceSwipe('right');
+    onSwipeRight(meals[0]);
+  };
 
-      const progress = Math.abs(event.translationX) / SWIPE_THRESHOLD;
-      nextCardScale.value = interpolate(progress, [0, 1], [0.9, 0.95]);
-      nextCardOpacity.value = interpolate(progress, [0, 1], [0.7, 0.9]);
-    })
-    .onEnd((event) => {
-      const shouldSwipeLeft = event.translationX < -SWIPE_THRESHOLD;
-      const shouldSwipeRight = event.translationX > SWIPE_THRESHOLD;
+  const handleDislike = () => {
+    forceSwipe('left');
+    onSwipeLeft(meals[0]);
+  };
 
-      if (shouldSwipeLeft || shouldSwipeRight) {
-        const targetX = shouldSwipeLeft ? -screenWidth * 1.5 : screenWidth * 1.5;
+  const forceSwipe = (direction: 'right' | 'left' | 'up' | 'down') => {
+    const swipeConfig = {
+      right: { x: screenWidth * 1.5, y: 0 },
+      left: { x: -screenWidth * 1.5, y: 0 },
+      up: { x: 0, y: -screenWidth * 1.5 },
+      down: { x: 0, y: screenWidth * 1.5 },
+    };
 
-        translateX.value = withTiming(targetX, { duration: 300 });
-        translateY.value = withTiming(event.translationY * 0.2, { duration: 300 });
-        rotate.value = withTiming(shouldSwipeLeft ? -30 : 30, { duration: 300 });
-        scale.value = withTiming(0.8, { duration: 300 });
-
-        // Pass boolean into JS safely
-        runOnJS(handleSwipe)(shouldSwipeLeft);
-      } else {
-        translateX.value = withSpring(0);
-        translateY.value = withSpring(0);
-        rotate.value = withSpring(0);
-        scale.value = withSpring(1);
-        nextCardScale.value = withSpring(0.9);
-        nextCardOpacity.value = withSpring(0.7);
-      }
+    translateX.value = withTiming(swipeConfig[direction].x, {
+      duration: SWIPE_OUT_DURATION,
     });
 
-  const cardStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: translateX.value },
-      { translateY: translateY.value },
-      { rotate: `${rotate.value}deg` },
-      { scale: scale.value },
-    ],
-  }));
-
-  const nextCardStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: nextCardScale.value }],
-    opacity: nextCardOpacity.value,
-  }));
-
-  if (currentIndex >= meals.length) {
-    return (
-      <View style={styles.container}>
-        <View style={styles.doneBox}>
-          <Text style={styles.doneTitle}>🎉 All done!</Text>
-          <Text style={styles.doneSubtitle}>You&apos;ve seen all available meals</Text>
-        </View>
-      </View>
+    translateY.value = withTiming(
+      swipeConfig[direction].y,
+      {
+        duration: SWIPE_OUT_DURATION,
+      },
+      () => runOnJS(onSwipeComplete)(),
     );
-  }
+  };
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderMove(_, gestureState) {
+        translateX.value = gestureState.dx;
+        translateY.value = gestureState.dy;
+
+        const dragDistance = Math.sqrt(gestureState.dx ** 2 + gestureState.dy ** 2);
+        const progress = Math.min(dragDistance / SWIPE_THRESHOLD, 1);
+        nextCardScale.value = 0.9 + 0.1 * progress;
+      },
+      onPanResponderRelease(_, gestureState) {
+        const absDx = Math.abs(gestureState.dx);
+        const absDy = Math.abs(gestureState.dy);
+
+        if (absDy > absDx) {
+          if (gestureState.dy < -SWIPE_THRESHOLD) {
+            forceSwipe('up');
+          } else if (gestureState.dy > SWIPE_THRESHOLD) {
+            forceSwipe('down');
+          } else {
+            resetPosition();
+          }
+        } else {
+          if (gestureState.dx > SWIPE_THRESHOLD) {
+            forceSwipe('right');
+          } else if (gestureState.dx < -SWIPE_THRESHOLD) {
+            forceSwipe('left');
+          } else {
+            resetPosition();
+          }
+        }
+      },
+    }),
+  ).current;
+
+  const resetPosition = () => {
+    translateX.value = withTiming(0, { duration: RESET_DURATION });
+    translateY.value = withTiming(0, { duration: RESET_DURATION });
+    nextCardScale.value = withTiming(0.9, { duration: RESET_DURATION });
+    nextCardOpacity.value = withTiming(0.7, { duration: RESET_DURATION });
+  };
+
+  const renderMeal = (meal: Meal, index: number) => {
+    return (
+      <MealCard
+        key={index}
+        meal={meal}
+        index={index}
+        totalcards={meals.length}
+        panHandlers={index === 0 ? panResponder.panHandlers : dummyTranslate}
+        nextCardScale={index === 0 ? nextCardScale : dummyTranslate}
+        translateX={index === 0 ? translateX : dummyTranslate}
+        translateY={index === 0 ? translateY : dummyTranslate}
+      />
+    );
+  };
 
   return (
     <View style={styles.container}>
-      {/* Next card (background) */}
-      {currentIndex + 1 < meals.length && (
-        <Animated.View style={[styles.nextCard, nextCardStyle]}>
-          <MealCard meal={meals[currentIndex + 1]} />
-        </Animated.View>
-      )}
-
-      {/* Current card (foreground) */}
-      <GestureDetector gesture={panGesture}>
-        <Animated.View style={[styles.currentCard, cardStyle]}>
-          <MealCard meal={meals[currentIndex]} />
-        </Animated.View>
-      </GestureDetector>
+      <View style={styles.cardContainer}>{meals.map(renderMeal).reverse()}</View>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.btn} onPress={handleDislike}>
+          <Image source={require('../assets/images/icon.png')} style={styles.image} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.btn} onPress={handleLike}>
+          <Image source={require('../assets/images/icon.png')} style={styles.image} />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#F3F4F6', // soft gray bg
+    flex: 1,
   },
-  currentCard: {
-    zIndex: 2,
+  cardContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  nextCard: {
+  buttonContainer: {
     position: 'absolute',
-    zIndex: 1,
+    bottom: 0,
+    flexDirection: 'row',
+    width: '100%',
+    justifyContent: 'space-evenly',
   },
-  doneBox: {
-    backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 24,
+  btn: {
+    backgroundColor: '#fff',
+    height: 60,
+    width: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
     shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 5,
   },
-  doneTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#111827',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  doneSubtitle: {
-    fontSize: 14,
-    color: '#4B5563',
-    textAlign: 'center',
+  image: {
+    width: 25,
+    height: 25,
   },
 });

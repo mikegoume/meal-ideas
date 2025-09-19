@@ -18,16 +18,16 @@ export const sampleMeals: Meal[] = [
       { name: 'Egg', amount: '1', unit: 'large' },
       { name: 'Lemon juice', amount: '1', unit: 'tbsp' },
       { name: 'Salt', amount: '1', unit: 'pinch' },
-      { name: 'Black pepper', amount: '1', unit: 'pinch' }
+      { name: 'Black pepper', amount: '1', unit: 'pinch' },
     ],
     instructions: [
       'Toast the bread slices until golden brown',
       'Mash the avocado with lemon juice, salt, and pepper',
       'Bring water to boil and poach the egg for 3-4 minutes',
       'Spread avocado mixture on toast',
-      'Top with poached egg and season with pepper'
+      'Top with poached egg and season with pepper',
     ],
-    tags: ['healthy', 'quick', 'protein']
+    tags: ['healthy', 'quick', 'protein'],
   },
   {
     id: '2',
@@ -46,7 +46,7 @@ export const sampleMeals: Meal[] = [
       { name: 'Cherry tomatoes', amount: '200', unit: 'g' },
       { name: 'Cucumber', amount: '1', unit: 'medium' },
       { name: 'Olive oil', amount: '2', unit: 'tbsp' },
-      { name: 'Balsamic vinegar', amount: '1', unit: 'tbsp' }
+      { name: 'Balsamic vinegar', amount: '1', unit: 'tbsp' },
     ],
     instructions: [
       'Season chicken breast with salt and pepper',
@@ -54,9 +54,9 @@ export const sampleMeals: Meal[] = [
       'Let chicken rest and slice thinly',
       'Mix greens, tomatoes, and cucumber',
       'Whisk olive oil and balsamic vinegar',
-      'Assemble salad and top with chicken'
+      'Assemble salad and top with chicken',
     ],
-    tags: ['protein', 'fresh', 'low-carb']
+    tags: ['protein', 'fresh', 'low-carb'],
   },
   {
     id: '3',
@@ -75,15 +75,15 @@ export const sampleMeals: Meal[] = [
       { name: 'Blueberries', amount: '100', unit: 'g' },
       { name: 'Almond milk', amount: '200', unit: 'ml' },
       { name: 'Granola', amount: '30', unit: 'g' },
-      { name: 'Chia seeds', amount: '1', unit: 'tbsp' }
+      { name: 'Chia seeds', amount: '1', unit: 'tbsp' },
     ],
     instructions: [
       'Blend protein powder, banana, half blueberries, and almond milk',
       'Pour into bowl',
       'Top with remaining blueberries, granola, and chia seeds',
-      'Serve immediately'
+      'Serve immediately',
     ],
-    tags: ['high-protein', 'antioxidants', 'filling']
+    tags: ['high-protein', 'antioxidants', 'filling'],
   },
   {
     id: '4',
@@ -102,7 +102,7 @@ export const sampleMeals: Meal[] = [
       { name: 'Broccoli', amount: '200', unit: 'g' },
       { name: 'Lemon', amount: '1', unit: 'medium' },
       { name: 'Olive oil', amount: '2', unit: 'tbsp' },
-      { name: 'Garlic', amount: '2', unit: 'cloves' }
+      { name: 'Garlic', amount: '2', unit: 'cloves' },
     ],
     instructions: [
       'Cook quinoa according to package instructions',
@@ -110,9 +110,9 @@ export const sampleMeals: Meal[] = [
       'Grill salmon for 4-5 minutes per side',
       'Steam broccoli until tender',
       'Sauté garlic in olive oil',
-      'Serve salmon over quinoa with broccoli'
+      'Serve salmon over quinoa with broccoli',
     ],
-    tags: ['omega-3', 'complete-protein', 'healthy-fats']
+    tags: ['omega-3', 'complete-protein', 'healthy-fats'],
   },
   {
     id: '5',
@@ -131,7 +131,7 @@ export const sampleMeals: Meal[] = [
       { name: 'Spinach', amount: '100', unit: 'g' },
       { name: 'Avocado', amount: '1', unit: 'medium' },
       { name: 'Tahini', amount: '2', unit: 'tbsp' },
-      { name: 'Lemon juice', amount: '2', unit: 'tbsp' }
+      { name: 'Lemon juice', amount: '2', unit: 'tbsp' },
     ],
     instructions: [
       'Roast cubed sweet potato with olive oil and spices',
@@ -139,8 +139,8 @@ export const sampleMeals: Meal[] = [
       'Massage spinach with lemon juice',
       'Make tahini dressing with lemon and water',
       'Arrange all components in a bowl',
-      'Drizzle with tahini dressing'
+      'Drizzle with tahini dressing',
     ],
-    tags: ['plant-based', 'fiber-rich', 'colorful']
-  }
+    tags: ['plant-based', 'fiber-rich', 'colorful'],
+  },
 ];
