@@ -55,10 +55,10 @@ export default function SettingsScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <SafeAreaView style={{ flex: 1 }}>
       <ScrollView className="flex-1">
-        <View className="px-6 pt-4 pb-6">
-          <Text className="text-3xl font-bold text-gray-900 mb-2">Settings</Text>
+        <View className="px-6 ">
+          <Text className="text-3xl font-bold text-gray-900">Settings</Text>
           <Text className="text-gray-600 text-lg">Customize your meal preferences</Text>
         </View>
 
