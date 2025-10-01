@@ -1,7 +1,8 @@
 import { useAsyncStorage } from '@/hooks/useAsyncStorage';
+import { useAuth } from '@/hooks/useAuth';
 import { MealAim, MealRole, UserPreferences } from '@/types/meal';
 import React from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const mealRoles: { key: MealRole; label: string }[] = [
@@ -22,6 +23,7 @@ const mealAims: { key: MealAim; label: string; description: string }[] = [
 ];
 
 export default function SettingsScreen() {
+  const { user, logout } = useAuth();
   const { storedValue: preferences, setValue: setPreferences } = useAsyncStorage<UserPreferences>(
     'userPreferences',
     {
@@ -54,12 +56,48 @@ export default function SettingsScreen() {
     });
   };
 
+  const handleLogout = () => {
+    Alert.alert('Logout', 'Are you sure you want to logout?', [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: 'Logout',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await logout();
+          } catch (error) {
+            Alert.alert('Error', 'Failed to logout. Please try again.');
+          }
+        },
+      },
+    ]);
+  };
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <ScrollView className="flex-1">
         <View className="px-6 ">
           <Text className="text-3xl font-bold text-gray-900">Settings</Text>
           <Text className="text-gray-600 text-lg">Customize your meal preferences</Text>
+        </View>
+
+        {/* User Profile Section */}
+        <View className="px-6 mb-8">
+          <Text className="text-xl font-bold text-gray-900 mb-4">Profile</Text>
+          <View className="bg-gray-50 p-4 rounded-2xl">
+            <View className="flex-row items-center justify-between">
+              <View className="flex-1">
+                <Text className="text-gray-900 font-semibold text-lg">{user?.name || 'User'}</Text>
+                <Text className="text-gray-600 text-sm">{user?.email}</Text>
+              </View>
+              <TouchableOpacity onPress={handleLogout} className="bg-red-500 px-4 py-2 rounded-lg">
+                <Text className="text-white font-medium">Logout</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
 
         <View className="px-6 mb-8">
