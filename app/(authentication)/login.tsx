@@ -208,7 +208,7 @@ const LoginScreen = () => {
             {/* Sign Up Link */}
             <View className="py-6">
               <Text className="text-center text-gray-600">
-                Don&apos;t have an account?{' '}
+                Don&apos;t have an account?
                 <Text className="text-orange-600 font-medium">Register</Text>
               </Text>
             </View>

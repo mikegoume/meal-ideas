@@ -66,11 +66,7 @@ export default function SettingsScreen() {
         text: 'Logout',
         style: 'destructive',
         onPress: async () => {
-          try {
-            await logout();
-          } catch (error) {
-            Alert.alert('Error', 'Failed to logout. Please try again.');
-          }
+          await logout();
         },
       },
     ]);
@@ -103,21 +99,18 @@ export default function SettingsScreen() {
         <View className="px-6 mb-8">
           <Text className="text-xl font-bold text-gray-900 mb-4">Meal Times</Text>
           <Text className="text-gray-600 mb-4">When do you want meal suggestions?</Text>
-
           <View className="flex-row flex-wrap gap-3">
             {mealRoles.map(({ key, label }) => (
               <TouchableOpacity
                 key={key}
                 onPress={() => toggleRole(key)}
-                className={`px-4 py-2 rounded-full border-2 ${
-                  preferences.selectedRoles.includes(key)
+                className={`px-4 py-2 rounded-full border-2 ${preferences.selectedRoles.includes(key)
                     ? 'bg-orange-500 border-orange-500'
                     : 'bg-white border-gray-200'
-                }`}>
-                <Text
-                  className={`font-medium ${
-                    preferences.selectedRoles.includes(key) ? 'text-white' : 'text-gray-700'
                   }`}>
+                <Text
+                  className={`font-medium ${preferences.selectedRoles.includes(key) ? 'text-white' : 'text-gray-700'
+                    }`}>
                   {label}
                 </Text>
               </TouchableOpacity>
@@ -134,27 +127,24 @@ export default function SettingsScreen() {
               <TouchableOpacity
                 key={key}
                 onPress={() => toggleAim(key)}
-                className={`p-4 rounded-2xl border-2 ${
-                  preferences.selectedAims.includes(key)
+                className={`p-4 rounded-2xl border-2 ${preferences.selectedAims.includes(key)
                     ? 'bg-green-50 border-green-500'
                     : 'bg-white border-gray-200'
-                }`}>
+                  }`}>
                 <View className="flex-row items-center justify-between">
                   <View className="flex-1">
                     <Text
-                      className={`font-bold text-lg ${
-                        preferences.selectedAims.includes(key) ? 'text-green-700' : 'text-gray-900'
-                      }`}>
+                      className={`font-bold text-lg ${preferences.selectedAims.includes(key) ? 'text-green-700' : 'text-gray-900'
+                        }`}>
                       {label}
                     </Text>
                     <Text className="text-gray-600 text-sm mt-1">{description}</Text>
                   </View>
                   <View
-                    className={`w-6 h-6 rounded-full border-2 items-center justify-center ${
-                      preferences.selectedAims.includes(key)
+                    className={`w-6 h-6 rounded-full border-2 items-center justify-center ${preferences.selectedAims.includes(key)
                         ? 'bg-green-500 border-green-500'
                         : 'border-gray-300'
-                    }`}>
+                      }`}>
                     {preferences.selectedAims.includes(key) && (
                       <Text className="text-white font-bold text-xs">✓</Text>
                     )}

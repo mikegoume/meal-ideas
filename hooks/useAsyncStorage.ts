@@ -1,15 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 export function useAsyncStorage<T>(key: string, initialValue: T) {
   const [storedValue, setStoredValue] = useState<T>(initialValue);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadStoredValue();
-  }, []);
-
-  const loadStoredValue = async () => {
+  const loadStoredValue = useCallback(async () => {
     try {
       const item = await AsyncStorage.getItem(key);
       if (item) {
@@ -20,7 +16,11 @@ export function useAsyncStorage<T>(key: string, initialValue: T) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [key]);
+
+  useEffect(() => {
+    loadStoredValue();
+  }, [loadStoredValue]);
 
   const setValue = async (value: T) => {
     try {

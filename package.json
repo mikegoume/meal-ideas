@@ -30,6 +30,7 @@
     "expo-haptics": "~15.0.7",
     "expo-image": "~3.0.8",
     "expo-linking": "~8.0.8",
+    "expo-local-authentication": "~17.0.7",
     "expo-router": "~6.0.6",
     "expo-splash-screen": "~31.0.10",
     "expo-status-bar": "~3.0.8",
@@ -38,7 +39,6 @@
     "expo-web-browser": "~15.0.7",
     "lucide-react-native": "^0.544.0",
     "nativewind": "^4.2.1",
-    "prettier": "^3.6.2",
     "prettier-plugin-tailwindcss": "^0.6.14",
     "react": "19.1.0",
     "react-dom": "19.1.0",
@@ -55,8 +55,11 @@
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
-    "eslint": "^9.35.0",
+    "eslint": "^9.37.0",
     "eslint-config-expo": "~10.0.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "prettier": "^3.6.2",
     "typescript": "~5.9.2"
   },
   "private": true,
