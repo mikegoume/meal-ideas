@@ -1,69 +1,58 @@
 import { AuthProvider } from '@/contexts/AuthContext';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
+import { db } from '@/lib/db';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useColorScheme, vars } from 'nativewind';
-import { ReactElement } from 'react';
-import { View } from 'react-native';
+import { Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import '../global.css';
 
-const themes = {
-  brand: {
-    light: vars({
-      '--color-primary': 'black',
-      '--color-secondary': 'white',
-    }),
-    dark: vars({
-      '--color-primary': 'white',
-      '--color-secondary': 'dark',
-    }),
-  },
-  christmas: {
-    light: vars({
-      '--color-primary': 'red',
-      '--color-secondary': 'green',
-    }),
-    dark: vars({
-      '--color-primary': 'green',
-      '--color-secondary': 'red',
-    }),
-  },
-};
+function AppLayout() {
+  const { isLoading, user, error } = db.useAuth();
 
-type ThemeProps = {
-  children: ReactElement;
-  name: 'brand' | 'christmas';
-};
+  if (isLoading) {
+    return (
+      <View>
+        <Text>Is Loading</Text>;
+      </View>
+    );
+  }
 
-function Theme({ children, name }: ThemeProps) {
-  const { colorScheme } = useColorScheme();
+  if (error) {
+    return (
+      <View>
+        <Text>{error.message}</Text>;
+      </View>
+    );
+  }
 
-  console.log(colorScheme);
-
-  if (!colorScheme) return;
-
-  return <View style={themes[name][colorScheme]}>{children}</View>;
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Protected guard={!!user}>
+        <Stack.Screen name="splash" />
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="recipe/[id]" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="chat/[recipeId]" options={{ presentation: 'modal' }} />
+      </Stack.Protected>
+      <Stack.Protected guard={!user}>
+        <Stack.Screen name="(authentication)" />
+      </Stack.Protected>
+      <Stack.Screen name="+not-found" />
+    </Stack>
+  );
 }
 
 export default function RootLayout() {
   useFrameworkReady();
 
   return (
-    <Theme name="brand">
-      <AuthProvider>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="splash" />
-            <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="(authentication)" />
-            <Stack.Screen name="recipe/[id]" options={{ presentation: 'modal' }} />
-            <Stack.Screen name="chat/[recipeId]" options={{ presentation: 'modal' }} />
-            <Stack.Screen name="+not-found" />
-          </Stack>
-          <StatusBar style="auto" />
-        </GestureHandlerRootView>
-      </AuthProvider>
-    </Theme>
+    // <Theme name="brand">
+    <AuthProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <AppLayout />
+        <StatusBar style="auto" />
+      </GestureHandlerRootView>
+    </AuthProvider>
+    // </Theme>
   );
 }

@@ -1,13 +1,7 @@
-import GoogleIcon from '@/assets/images/google-login-icon.png';
-import { useAuth } from '@/hooks/useAuth';
-import { Ionicons } from '@expo/vector-icons';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { db } from '@/lib/db';
+import React, { useState } from 'react';
 import {
   Alert,
-  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -17,68 +11,83 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { z } from 'zod';
-
-// Zod validation schema
-const loginSchema = z.object({
-  email: z.string().min(1, 'Email is required').email('Please enter a valid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-});
-
-type LoginFormData = z.infer<typeof loginSchema>;
 
 const LoginScreen = () => {
-  const [showPassword, setShowPassword] = useState(false);
-  const { login, loginWithGoogle, loginWithApple, isLoading, isAuthenticated } = useAuth();
-  const router = useRouter();
+  const [showCodeInput, setShowCodeInput] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [email, setEmail] = useState('');
+  const [code, setCode] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [codeError, setCodeError] = useState('');
 
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: '',
-      password: '',
-    },
-  });
-
-  // Navigate to main app when user becomes authenticated
-  useEffect(() => {
-    if (isAuthenticated && !isLoading) {
-      router.replace('/(tabs)');
+  const validateEmail = (email: string): boolean => {
+    if (!email) {
+      setEmailError('Email is required');
+      return false;
     }
-  }, [isAuthenticated, isLoading, router]);
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setEmailError('Please enter a valid email address');
+      return false;
+    }
+    setEmailError('');
+    return true;
+  };
 
-  const onSubmit = async (data: LoginFormData) => {
+  const validateCode = (code: string): boolean => {
+    if (!code) {
+      setCodeError('Code is required');
+      return false;
+    }
+    if (code.length < 6) {
+      setCodeError('Code must be at least 6 characters');
+      return false;
+    }
+    setCodeError('');
+    return true;
+  };
+
+  const handleSendCode = async () => {
+    if (!validateEmail(email)) return;
+
+    setIsLoading(true);
     try {
-      await login(data.email, data.password);
-      // Navigation will be handled by useEffect when isAuthenticated becomes true
+      await db.auth.sendMagicCode({ email });
+      setCode('');
+      setCodeError('');
+      setShowCodeInput(true);
     } catch (error) {
       Alert.alert(
         'Error',
-        error instanceof Error ? error.message : 'Login failed. Please try again.',
+        error instanceof Error ? error.message : 'Failed to send code. Please try again.',
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleGoogleLogin = async () => {
+  const handleVerifyCode = async () => {
+    if (!validateCode(code)) return;
+
+    setIsLoading(true);
     try {
-      await loginWithGoogle();
-      // Navigation will be handled by useEffect when isAuthenticated becomes true
+      await db.auth.signInWithMagicCode({ email, code });
+      // Successfully logged in - navigation will be handled automatically
     } catch (error) {
-      Alert.alert('Error', error instanceof Error ? error.message : 'Google login failed');
+      Alert.alert(
+        'Error',
+        error instanceof Error ? error.message : 'Invalid code. Please try again.',
+      );
+      setCodeError('Invalid code');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleAppleLogin = async () => {
-    try {
-      await loginWithApple();
-      // Navigation will be handled by useEffect when isAuthenticated becomes true
-    } catch (error) {
-      Alert.alert('Error', error instanceof Error ? error.message : 'Apple login failed');
-    }
+  const handleBackToEmail = () => {
+    setShowCodeInput(false);
+    setCode('');
+    setCodeError('');
   };
 
   return (
@@ -87,131 +96,101 @@ const LoginScreen = () => {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1">
         <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
-          <View className="flex-1 px-6 pt-12">
-            {/* Header */}
+          <View className="flex-1 justify-center px-6 pt-12">
             <View className="mb-8">
               <Text className="text-3xl font-bold text-gray-900 mb-2">Welcome Back!</Text>
-              <Text className="text-gray-600 ">log in to your account</Text>
-            </View>
-
-            {/* Login Form */}
-            <View className="flex-1">
-              {/* Email Input */}
-              <View className="mb-4">
-                <Text className="text-gray-700 font-medium mb-2">Email</Text>
-                <Controller
-                  control={control}
-                  name="email"
-                  render={({ field: { onChange, onBlur, value } }) => (
-                    <View className="relative">
-                      <TextInput
-                        className={`bg-white border px-4 py-4 rounded-3xl ${
-                          errors.email ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                        placeholder="johndoe@gmail.com"
-                        value={value}
-                        onChangeText={onChange}
-                        onBlur={onBlur}
-                        keyboardType="email-address"
-                        autoCapitalize="none"
-                        autoCorrect={false}
-                        style={{ textAlignVertical: 'center' }}
-                      />
-                    </View>
-                  )}
-                />
-                {errors.email && (
-                  <Text className="text-red-500 text-sm mt-1">{errors.email.message}</Text>
-                )}
-              </View>
-
-              {/* Password Input */}
-              <View className="mb-6">
-                <Text className="text-gray-700 font-medium mb-2">Password</Text>
-                <Controller
-                  control={control}
-                  name="password"
-                  render={({ field: { onChange, onBlur, value } }) => (
-                    <View className="relative">
-                      <TextInput
-                        className={`bg-white border px-4 py-4 pr-12 rounded-3xl ${
-                          errors.password ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                        placeholder="min. 8 characters"
-                        value={value}
-                        onChangeText={onChange}
-                        onBlur={onBlur}
-                        secureTextEntry={!showPassword}
-                        style={{ textAlignVertical: 'center' }}
-                      />
-                      <TouchableOpacity
-                        onPress={() => setShowPassword(!showPassword)}
-                        className="absolute right-4 top-4">
-                        <Ionicons
-                          name={showPassword ? 'eye-off-outline' : 'eye-outline'}
-                          size={20}
-                          className="text-gray-400"
-                        />
-                      </TouchableOpacity>
-                    </View>
-                  )}
-                />
-                {errors.password && (
-                  <Text className="text-red-500 text-sm mt-1">{errors.password.message}</Text>
-                )}
-              </View>
-
-              {/* Forgot Password */}
-              <TouchableOpacity className="mb-6 ml-auto">
-                <Text className="text-orange-600 font-medium text-right">forgot password?</Text>
-              </TouchableOpacity>
-
-              {/* Login Button */}
-              <TouchableOpacity
-                onPress={handleSubmit(onSubmit)}
-                disabled={isLoading}
-                className={`bg-orange-500 rounded-3xl py-3 mb-6 ${isLoading ? 'opacity-50' : ''}`}>
-                <Text className="text-white text-center font-semibold text-lg">
-                  {isLoading ? 'Signing In...' : 'LOGIN'}
-                </Text>
-              </TouchableOpacity>
-
-              {/* Divider */}
-              <View className="flex-row items-center mb-6">
-                <View className="flex-1 h-px bg-gray-300" />
-                <Text className="mx-4 text-gray-500">or</Text>
-                <View className="flex-1 h-px bg-gray-300" />
-              </View>
-
-              {/* Social Login Buttons */}
-              <View className="flex flex-col gap-6">
-                {/* Google Login */}
-                <TouchableOpacity
-                  onPress={handleGoogleLogin}
-                  disabled={isLoading}
-                  className={`bg-white border border-gray-300 rounded-3xl py-3 flex-row items-center justify-center ${isLoading ? 'opacity-50' : ''}`}>
-                  <Image source={GoogleIcon} className="size-6 mr-3" />
-                  <Text className="text-gray-700 font-medium ">Sign up with Google</Text>
-                </TouchableOpacity>
-
-                {/* Apple Login */}
-                <TouchableOpacity
-                  onPress={handleAppleLogin}
-                  disabled={isLoading}
-                  className={`bg-white border border-gray-300 rounded-3xl py-3 flex-row items-center justify-center ${isLoading ? 'opacity-50' : ''}`}>
-                  <Ionicons name="logo-apple" size={20} className="size-6 mr-3" />
-                  <Text className="text-gray-700 font-medium ">Sign up with Apple</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            {/* Sign Up Link */}
-            <View className="py-6">
-              <Text className="text-center text-gray-600">
-                Don&apos;t have an account?
-                <Text className="text-orange-600 font-medium">Register</Text>
+              <Text className="text-gray-600">
+                {showCodeInput ? `Enter the code sent to ${email}` : 'Log in to your account'}
               </Text>
             </View>
+
+            {showCodeInput ? (
+              <>
+                <View className="mb-4">
+                  <Text className="text-gray-700 font-medium mb-2">Verification Code</Text>
+                  <TextInput
+                    className={`bg-white border px-4 py-4 rounded-3xl ${
+                      codeError ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder="Enter 6-digit code"
+                    value={code}
+                    onChangeText={(text) => {
+                      setCode(text);
+                      if (codeError) setCodeError('');
+                    }}
+                    keyboardType="number-pad"
+                    maxLength={6}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    autoFocus
+                  />
+                  {codeError && <Text className="text-red-500 text-sm mt-1">{codeError}</Text>}
+                </View>
+
+                <TouchableOpacity
+                  onPress={handleVerifyCode}
+                  disabled={isLoading}
+                  className={`bg-orange-500 rounded-3xl py-3 mb-4 ${
+                    isLoading ? 'opacity-50' : ''
+                  }`}>
+                  <Text className="text-white text-center font-semibold text-lg">
+                    {isLoading ? 'Verifying...' : 'VERIFY CODE'}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={handleBackToEmail} disabled={isLoading}>
+                  <Text className="text-center text-orange-600 font-medium">
+                    Use a different email
+                  </Text>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                <View className="mb-4">
+                  <Text className="text-gray-700 font-medium mb-2">Email</Text>
+                  <TextInput
+                    className={`bg-white border px-4 py-4 rounded-3xl ${
+                      emailError ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder="johndoe@gmail.com"
+                    value={email}
+                    onChangeText={(text) => {
+                      setEmail(text);
+                      if (emailError) setEmailError('');
+                    }}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    autoFocus
+                  />
+                  {emailError && <Text className="text-red-500 text-sm mt-1">{emailError}</Text>}
+                </View>
+
+                <TouchableOpacity
+                  onPress={handleSendCode}
+                  disabled={isLoading}
+                  className={`bg-orange-500 rounded-3xl py-3 mb-6 ${
+                    isLoading ? 'opacity-50' : ''
+                  }`}>
+                  <Text className="text-white text-center font-semibold text-lg">
+                    {isLoading ? 'Sending Code...' : 'SEND CODE'}
+                  </Text>
+                </TouchableOpacity>
+
+                <View className="flex-row items-center mb-6">
+                  <View className="flex-1 h-px bg-gray-300" />
+                  <Text className="mx-4 text-gray-500">or</Text>
+                  <View className="flex-1 h-px bg-gray-300" />
+                </View>
+
+                <View className="flex flex-row justify-center gap-2 align-middle">
+                  <Text className="text-center text-gray-600">Don&apos;t have an account?</Text>
+                  <TouchableOpacity>
+                    <Text className="text-orange-600 font-medium">Register</Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
