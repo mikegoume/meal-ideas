@@ -1,16 +1,32 @@
+import Breakfast from '@/assets/images/meals/breakfast.png';
+import Dessert from '@/assets/images/meals/candies.png';
+import Dinner from '@/assets/images/meals/dinner.png';
+import Lunch from '@/assets/images/meals/lunch.png';
+import Salad from '@/assets/images/meals/salad.png';
+import Snack from '@/assets/images/meals/snacks.png';
 import { useAsyncStorage } from '@/hooks/useAsyncStorage';
-import { useAuth } from '@/hooks/useAuth';
+import { db } from '@/lib/db';
 import { MealAim, MealRole, UserPreferences } from '@/types/meal';
-import React from 'react';
-import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useRef } from 'react';
+import {
+  Alert,
+  Animated,
+  Image,
+  ImageSourcePropType,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const mealRoles: { key: MealRole; label: string }[] = [
-  { key: 'breakfast', label: 'Breakfast' },
-  { key: 'lunch', label: 'Lunch' },
-  { key: 'dinner', label: 'Dinner' },
-  { key: 'snack', label: 'Snack' },
-  { key: 'dessert', label: 'Dessert' },
+const mealRoles: { key: MealRole; label: string; imageUrl?: ImageSourcePropType }[] = [
+  { key: 'breakfast', label: 'Breakfast', imageUrl: Breakfast },
+  { key: 'lunch', label: 'Lunch', imageUrl: Lunch },
+  { key: 'salad', label: 'Salad', imageUrl: Salad },
+  { key: 'dinner', label: 'Dinner', imageUrl: Dinner },
+  { key: 'snack', label: 'Snack', imageUrl: Snack },
+  { key: 'dessert', label: 'Dessert', imageUrl: Dessert },
 ];
 
 const mealAims: { key: MealAim; label: string; description: string }[] = [
@@ -23,20 +39,49 @@ const mealAims: { key: MealAim; label: string; description: string }[] = [
 ];
 
 export default function SettingsScreen() {
-  const { user, logout } = useAuth();
+  const { top, bottom } = useSafeAreaInsets();
+  const { user } = db.useAuth();
+
   const { storedValue: preferences, setValue: setPreferences } = useAsyncStorage<UserPreferences>(
     'userPreferences',
     {
       selectedRoles: [],
-      selectedAims: [],
+      selectedAim: null,
     },
   );
 
+  /** 🔥 Animated scale values per meal role */
+  const scaleAnimations = useRef(
+    mealRoles.reduce(
+      (acc, role) => {
+        acc[role.key] = new Animated.Value(1);
+        return acc;
+      },
+      {} as Record<MealRole, Animated.Value>,
+    ),
+  ).current;
+
   const toggleRole = async (role: MealRole) => {
-    const currentRoles = preferences.selectedRoles;
-    const newRoles = currentRoles.includes(role)
-      ? currentRoles.filter((r) => r !== role)
-      : [...currentRoles, role];
+    const isSelected = preferences.selectedRoles.includes(role);
+
+    if (!isSelected) {
+      Animated.sequence([
+        Animated.timing(scaleAnimations[role], {
+          toValue: 0.5,
+          duration: 120,
+          useNativeDriver: true,
+        }),
+        Animated.timing(scaleAnimations[role], {
+          toValue: 1,
+          duration: 180,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+
+    const newRoles = isSelected
+      ? preferences.selectedRoles.filter((r) => r !== role)
+      : [...preferences.selectedRoles, role];
 
     await setPreferences({
       ...preferences,
@@ -45,126 +90,117 @@ export default function SettingsScreen() {
   };
 
   const toggleAim = async (aim: MealAim) => {
-    const currentAims = preferences.selectedAims;
-    const newAims = currentAims.includes(aim)
-      ? currentAims.filter((a) => a !== aim)
-      : [...currentAims, aim];
-
     await setPreferences({
       ...preferences,
-      selectedAims: newAims,
+      selectedAim: aim,
     });
   };
 
   const handleLogout = () => {
     Alert.alert('Logout', 'Are you sure you want to logout?', [
-      {
-        text: 'Cancel',
-        style: 'cancel',
-      },
+      { text: 'Cancel', style: 'cancel' },
       {
         text: 'Logout',
         style: 'destructive',
         onPress: async () => {
-          await logout();
+          // await db.logoutUser();
         },
       },
     ]);
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <ScrollView className="flex-1">
-        <View className="px-6 ">
+    <View className="flex-1 bg-neutral-50" style={{ paddingTop: top, paddingBottom: bottom }}>
+      <ScrollView className="flex-1 px-6">
+        {/* Header */}
+        <View className="mb-8">
           <Text className="text-3xl font-bold text-gray-900">Settings</Text>
           <Text className="text-gray-600 text-lg">Customize your meal preferences</Text>
         </View>
 
-        {/* User Profile Section */}
-        <View className="px-6 mb-8">
-          <Text className="text-xl font-bold text-gray-900 mb-4">Profile</Text>
-          <View className="bg-gray-50 p-4 rounded-2xl">
-            <View className="flex-row items-center justify-between">
-              <View className="flex-1">
-                <Text className="text-gray-900 font-semibold text-lg">{user?.name || 'User'}</Text>
-                <Text className="text-gray-600 text-sm">{user?.email}</Text>
-              </View>
-              <TouchableOpacity onPress={handleLogout} className="bg-red-500 px-4 py-2 rounded-lg">
-                <Text className="text-white font-medium">Logout</Text>
-              </TouchableOpacity>
+        {/* Profile */}
+        <View className="mb-8">
+          <Text className="text-xl font-bold text-gray-900">Profile</Text>
+          <View className="bg-white p-4 rounded-2xl flex-row justify-between items-center">
+            <View>
+              <Text className="text-lg font-semibold">{user?.imageURL || 'User'}</Text>
+              <Text className="text-gray-600">{user?.email}</Text>
             </View>
+            <TouchableOpacity onPress={handleLogout} className="bg-red-500 px-4 py-2 rounded-lg">
+              <Text className="text-white font-medium">Logout</Text>
+            </TouchableOpacity>
           </View>
         </View>
 
-        <View className="px-6 mb-8">
-          <Text className="text-xl font-bold text-gray-900 mb-4">Meal Times</Text>
+        {/* Meal Times */}
+        <View className="mb-8">
+          <Text className="text-xl font-bold text-gray-900">Meal Times</Text>
           <Text className="text-gray-600 mb-4">When do you want meal suggestions?</Text>
-          <View className="flex-row flex-wrap gap-3">
-            {mealRoles.map(({ key, label }) => (
-              <TouchableOpacity
-                key={key}
-                onPress={() => toggleRole(key)}
-                className={`px-4 py-2 rounded-full border-2 ${preferences.selectedRoles.includes(key)
-                    ? 'bg-orange-500 border-orange-500'
-                    : 'bg-white border-gray-200'
-                  }`}>
-                <Text
-                  className={`font-medium ${preferences.selectedRoles.includes(key) ? 'text-white' : 'text-gray-700'
+
+          <View className="flex-row justify-between">
+            {mealRoles.map(({ key, label, imageUrl }) => {
+              const selected = preferences.selectedRoles.includes(key);
+
+              return (
+                <TouchableOpacity
+                  key={key}
+                  onPress={() => toggleRole(key)}
+                  className="items-center"
+                  activeOpacity={0.8}>
+                  <Animated.View
+                    style={{ transform: [{ scale: scaleAnimations[key] }] }}
+                    className={`p-1 rounded-full border-2 ${
+                      selected ? 'border-orange-500' : 'border-transparent'
                     }`}>
-                  {label}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                    {imageUrl && (
+                      <Image
+                        source={imageUrl}
+                        className="size-12 rounded-full overflow-hidden"
+                        resizeMode="contain"
+                      />
+                    )}
+                  </Animated.View>
+
+                  <Text
+                    className={`mt-1 ${
+                      selected ? 'text-black font-semibold' : 'text-gray-600 font-medium'
+                    }`}>
+                    {label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
 
-        <View className="px-6 mb-8">
-          <Text className="text-xl font-bold text-gray-900 mb-4">Dietary Goals</Text>
+        {/* Dietary Goals */}
+        <View className="mb-8">
+          <Text className="text-xl font-bold text-gray-900">Dietary Goals</Text>
           <Text className="text-gray-600 mb-4">What are your nutritional goals?</Text>
 
-          <View className="space-y-3">
-            {mealAims.map(({ key, label, description }) => (
-              <TouchableOpacity
-                key={key}
-                onPress={() => toggleAim(key)}
-                className={`p-4 rounded-2xl border-2 ${preferences.selectedAims.includes(key)
-                    ? 'bg-green-50 border-green-500'
-                    : 'bg-white border-gray-200'
-                  }`}>
-                <View className="flex-row items-center justify-between">
-                  <View className="flex-1">
-                    <Text
-                      className={`font-bold text-lg ${preferences.selectedAims.includes(key) ? 'text-green-700' : 'text-gray-900'
-                        }`}>
-                      {label}
-                    </Text>
-                    <Text className="text-gray-600 text-sm mt-1">{description}</Text>
-                  </View>
-                  <View
-                    className={`w-6 h-6 rounded-full border-2 items-center justify-center ${preferences.selectedAims.includes(key)
-                        ? 'bg-green-500 border-green-500'
-                        : 'border-gray-300'
-                      }`}>
-                    {preferences.selectedAims.includes(key) && (
-                      <Text className="text-white font-bold text-xs">✓</Text>
-                    )}
-                  </View>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
+          {mealAims.map(({ key, label, description }) => (
+            <TouchableOpacity
+              key={key}
+              onPress={() => toggleAim(key)}
+              className={`p-4 mb-3 rounded-2xl border-2 ${
+                preferences.selectedAim === key
+                  ? 'bg-orange-50 border-orange-500'
+                  : 'bg-white border-gray-200'
+              }`}>
+              <Text className="font-bold text-lg">{label}</Text>
+              <Text className="text-gray-600 mt-1">{description}</Text>
+            </TouchableOpacity>
+          ))}
         </View>
 
-        <View className="px-6 mb-8">
-          <View className="bg-orange-50 p-4 rounded-2xl">
-            <Text className="text-orange-800 font-bold text-lg mb-2">💡 Pro Tip</Text>
-            <Text className="text-orange-700">
-              Leave preferences empty to see all available meals, or select specific options to get
-              personalized recommendations!
-            </Text>
-          </View>
+        {/* Tip */}
+        <View className="bg-orange-50 p-4 rounded-2xl mb-8">
+          <Text className="text-orange-800 font-bold mb-1">💡 Pro Tip</Text>
+          <Text className="text-orange-700">
+            Leave preferences empty to see all meals or select options for personalized results.
+          </Text>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

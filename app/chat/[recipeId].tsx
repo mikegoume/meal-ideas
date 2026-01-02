@@ -1,4 +1,4 @@
-import { sampleMeals } from '@/data/meals';
+import { sampleMeals } from '@/assets/mock/meals';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, Bot, Send, User } from 'lucide-react-native';
 import React, { useState } from 'react';

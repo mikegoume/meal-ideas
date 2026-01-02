@@ -1,5 +1,5 @@
+import { sampleMeals } from '@/assets/mock/meals';
 import AnimatedFlatList from '@/components/AnimatedFlatList';
-import { sampleMeals } from '@/data/meals';
 import { useAsyncStorage } from '@/hooks/useAsyncStorage';
 import React from 'react';
 import { StatusBar, StyleSheet, Text, View } from 'react-native';

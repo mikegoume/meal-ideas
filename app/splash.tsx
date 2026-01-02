@@ -15,7 +15,7 @@ export default function Splash() {
   // Navigate after splash animation completes
   useEffect(() => {
     if (splashCompleted) {
-      router.replace('/(tabs)/index');
+      router.replace('/(tabs)');
     }
   }, [splashCompleted, isLoading, isAuthenticated, router]);
 

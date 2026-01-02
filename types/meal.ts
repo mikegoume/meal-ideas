@@ -20,10 +20,10 @@ export interface Ingredient {
   unit: string;
 }
 
-export type MealRole = 'breakfast' | 'lunch' | 'dinner' | 'snack' | 'dessert';
-export type MealAim = 'normal' | 'diet' | 'bulk' | 'keto' | 'vegan' | 'vegetarian';
+export type MealRole = 'breakfast' | 'lunch' | 'dinner' | 'snack' | 'dessert' | 'salad';
+export type MealAim = 'normal' | 'diet' | 'bulk' | 'keto' | 'vegan' | 'vegetarian' | null;
 
 export interface UserPreferences {
   selectedRoles: MealRole[];
-  selectedAims: MealAim[];
+  selectedAim: MealAim;
 }

@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Heart, Chrome as Home, Settings } from 'lucide-react-native';
+import { Heart, Home, Settings } from 'lucide-react-native';
 
 export default function TabLayout() {
   return (
@@ -20,7 +20,7 @@ export default function TabLayout() {
         name="index"
         options={{
           headerShown: false,
-          title: 'Discover',
+          title: 'Home',
           tabBarIcon: ({ size, color }) => <Home size={size} color={color} />,
         }}
       />

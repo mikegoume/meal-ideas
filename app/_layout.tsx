@@ -1,6 +1,7 @@
 import { AuthProvider } from '@/contexts/AuthContext';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import { db } from '@/lib/db';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Text, View } from 'react-native';
@@ -30,7 +31,7 @@ function AppLayout() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Protected guard={!!user}>
         <Stack.Screen name="splash" />
-        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="/(tabs)" />
         <Stack.Screen name="recipe/[id]" options={{ presentation: 'modal' }} />
         <Stack.Screen name="chat/[recipeId]" options={{ presentation: 'modal' }} />
       </Stack.Protected>
@@ -45,14 +46,17 @@ function AppLayout() {
 export default function RootLayout() {
   useFrameworkReady();
 
+  const queryClient = new QueryClient();
   return (
     // <Theme name="brand">
-    <AuthProvider>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <AppLayout />
-        <StatusBar style="auto" />
-      </GestureHandlerRootView>
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <AppLayout />
+          <StatusBar style="auto" />
+        </GestureHandlerRootView>
+      </AuthProvider>
+    </QueryClientProvider>
     // </Theme>
   );
 }

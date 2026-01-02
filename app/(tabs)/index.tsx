@@ -1,41 +1,47 @@
+import { getMeals } from '@/api/meals';
 import { SwipeableCards } from '@/components/SwipeableCards';
-import { sampleMeals } from '@/data/meals';
-import { useAsyncStorage } from '@/hooks/useAsyncStorage';
 import { Meal } from '@/types/meal';
-import { router } from 'expo-router';
-import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Link, router } from 'expo-router';
+import React from 'react';
 import { Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
-  const [meals, setMeals] = useState(sampleMeals);
+  const { bottom, top } = useSafeAreaInsets();
 
-  const { storedValue: favoriteMeals, setValue: setFavoriteMeals } = useAsyncStorage<string[]>(
-    'favoriteMeals',
-    [],
-  );
+  const mealsQuery = useQuery({
+    queryKey: ['meals'],
+    queryFn: getMeals,
+  });
+
+  const meals = mealsQuery.data || [];
+
+  // const { storedValue: favoriteMeals, setValue: setFavoriteMeals } = useAsyncStorage<string[]>(
+  //   'favoriteMeals',
+  //   [],
+  // );
 
   const handleSwipeLeft = (meal: Meal) => {
     // Dislike - could implement a "disliked meals" list here
-    console.log('Disliked:', meal.name);
+    console.log('Disliked: ', meal.name);
   };
 
   const handleSwipeRight = async (meal: Meal) => {
-    console.log('i am called');
     // Like - add to favorites and navigate to recipe
-    const updatedFavorites = [...favoriteMeals];
-    if (!updatedFavorites.includes(meal.id)) {
-      updatedFavorites.push(meal.id);
-      await setFavoriteMeals(updatedFavorites);
-    }
-
+    // const updatedFavorites = [...favoriteMeals];
+    // if (!updatedFavorites.includes(meal.id)) {
+    //   updatedFavorites.push(meal.id);
+    //   await setFavoriteMeals(updatedFavorites);
+    // }
+    console.log('Liked: ', meal.name);
     router.push(`/recipe/${meal.id}`);
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <View className="flex flex-1 bg-neutral-50" style={{ paddingTop: top, paddingBottom: bottom }}>
       <View className="flex-1">
-        <View className="px-6 ">
+        <View className="px-6">
           <Text className="text-3xl font-bold text-gray-900">Meal Ideas</Text>
           <Text className="text-gray-600 text-lg">Swipe right to cook, left to skip</Text>
         </View>
@@ -44,7 +50,7 @@ export default function HomeScreen() {
           {meals.length > 0 ? (
             <SwipeableCards
               meals={meals}
-              setMeals={setMeals}
+              setMeals={() => {}}
               onSwipeLeft={handleSwipeLeft}
               onSwipeRight={handleSwipeRight}
             />
@@ -54,12 +60,16 @@ export default function HomeScreen() {
                 No meals found
               </Text>
               <Text className="text-gray-600 text-center">
-                Try adjusting your preferences in settings
+                Try adjusting your preferences in
+                <Link href="/settings" className="text-blue-500">
+                  {' '}
+                  settings
+                </Link>
               </Text>
             </View>
           )}
         </View>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }

@@ -1,6 +1,7 @@
 import { Meal } from '@/types/meal';
+import { Heart, X } from 'lucide-react-native';
 import React, { useRef } from 'react';
-import { Dimensions, Image, PanResponder, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Dimensions, PanResponder, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Easing, runOnJS, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 import { MealCard } from './MealCard';
 
@@ -134,14 +135,16 @@ export function SwipeableCards({
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.cardContainer}>{meals.map(renderMeal).reverse()}</View>
-      <View style={styles.buttonContainer}>
+    <View className="flex flex-1">
+      <View className="flex flex-col justify-center items-center">
+        {meals.map(renderMeal).reverse()}
+      </View>
+      <View className="absolute bottom-0 flex-row w-full justify-evenly">
         <TouchableOpacity style={styles.btn} onPress={handleDislike}>
-          <Image source={require('../assets/images/icon.png')} style={styles.image} />
+          <X />
         </TouchableOpacity>
         <TouchableOpacity style={styles.btn} onPress={handleLike}>
-          <Image source={require('../assets/images/icon.png')} style={styles.image} />
+          <Heart />
         </TouchableOpacity>
       </View>
     </View>
@@ -149,21 +152,6 @@ export function SwipeableCards({
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  cardContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonContainer: {
-    position: 'absolute',
-    bottom: 0,
-    flexDirection: 'row',
-    width: '100%',
-    justifyContent: 'space-evenly',
-  },
   btn: {
     backgroundColor: '#fff',
     height: 60,
@@ -176,9 +164,5 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 6,
     elevation: 5,
-  },
-  image: {
-    width: 25,
-    height: 25,
   },
 });
