@@ -1,4 +1,3 @@
-import { db } from '@/lib/db';
 import React, { useState } from 'react';
 import {
   Alert,
@@ -52,7 +51,7 @@ const LoginScreen = () => {
 
     setIsLoading(true);
     try {
-      await db.auth.sendMagicCode({ email });
+      // await db.auth.sendMagicCode({ email });
       setCode('');
       setCodeError('');
       setShowCodeInput(true);
@@ -71,7 +70,7 @@ const LoginScreen = () => {
 
     setIsLoading(true);
     try {
-      await db.auth.signInWithMagicCode({ email, code });
+      // await db.auth.signInWithMagicCode({ email, code });
       // Successfully logged in - navigation will be handled automatically
     } catch (error) {
       Alert.alert(

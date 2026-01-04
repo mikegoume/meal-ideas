@@ -1,41 +1,24 @@
-import { AuthProvider } from '@/contexts/AuthContext';
+import AuthProvider from '@/contexts/AuthContext';
+import { useAuthContext } from '@/hooks/useAuth';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
-import { db } from '@/lib/db';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import '../global.css';
 
 function AppLayout() {
-  const { isLoading, user, error } = db.useAuth();
-
-  if (isLoading) {
-    return (
-      <View>
-        <Text>Is Loading</Text>;
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View>
-        <Text>{error.message}</Text>;
-      </View>
-    );
-  }
+  const { isLoggedIn } = useAuthContext();
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Protected guard={!!user}>
-        <Stack.Screen name="splash" />
+      <Stack.Screen name="splash" />
+      <Stack.Protected guard={!!isLoggedIn}>
         <Stack.Screen name="/(tabs)" />
         <Stack.Screen name="recipe/[id]" options={{ presentation: 'modal' }} />
         <Stack.Screen name="chat/[recipeId]" options={{ presentation: 'modal' }} />
       </Stack.Protected>
-      <Stack.Protected guard={!user}>
+      <Stack.Protected guard={!isLoggedIn}>
         <Stack.Screen name="(authentication)" />
       </Stack.Protected>
       <Stack.Screen name="+not-found" />
@@ -48,7 +31,6 @@ export default function RootLayout() {
 
   const queryClient = new QueryClient();
   return (
-    // <Theme name="brand">
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <GestureHandlerRootView style={{ flex: 1 }}>
@@ -57,6 +39,5 @@ export default function RootLayout() {
         </GestureHandlerRootView>
       </AuthProvider>
     </QueryClientProvider>
-    // </Theme>
   );
 }

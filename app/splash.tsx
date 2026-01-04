@@ -1,12 +1,12 @@
 import { SplashScreen } from '@/components/SplashScreen';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/hooks/useAuth';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 
 export default function Splash() {
   const router = useRouter();
-  const { isLoading, isAuthenticated } = useAuth();
   const [splashCompleted, setSplashCompleted] = useState(false);
+  const { isLoading } = useAuthContext();
 
   const handleAnimationComplete = () => {
     setSplashCompleted(true);
@@ -14,10 +14,10 @@ export default function Splash() {
 
   // Navigate after splash animation completes
   useEffect(() => {
-    if (splashCompleted) {
+    if (splashCompleted && !isLoading) {
       router.replace('/(tabs)');
     }
-  }, [splashCompleted, isLoading, isAuthenticated, router]);
+  }, [splashCompleted, router, isLoading]);
 
   return <SplashScreen onAnimationComplete={handleAnimationComplete} />;
 }
