@@ -6,7 +6,7 @@ export const AuthContext = createContext<AuthData>({
   profile: undefined,
   isLoading: true,
   isLoggedIn: false,
-  refetchProfile: () => {},
+  refetchProfile: async (): Promise<void> => {},
 });
 
 export const useAuthContext = () => useContext(AuthContext);

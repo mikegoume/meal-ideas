@@ -8,12 +8,10 @@ import {
   MeasurementBottomSheet,
   MeasurementBottomSheetRef,
 } from '@/components/MeasurementBottomSheet';
-import { useAsyncStorage } from '@/hooks/useAsyncStorage';
 import { useAuthContext } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
-import { MealAim, MealRole, UserPreferences } from '@/types/meal';
-import { LogOut } from 'lucide-react-native';
-import React, { useCallback, useRef, useState } from 'react';
+import { MealAim, MealRole } from '@/types/meal';
+import React, { useCallback, useRef } from 'react';
 import {
   Alert,
   Animated,
@@ -25,39 +23,29 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import SettingsProfileInfo from '@/components/molecules/SettingsProfileInfo';
 
-const mealRoles: { key: MealRole; label: string; imageUrl?: ImageSourcePropType }[] = [
-  { key: 'breakfast', label: 'Breakfast', imageUrl: Breakfast },
-  { key: 'lunch', label: 'Lunch', imageUrl: Lunch },
-  { key: 'salad', label: 'Salad', imageUrl: Salad },
-  { key: 'dinner', label: 'Dinner', imageUrl: Dinner },
-  { key: 'snack', label: 'Snack', imageUrl: Snack },
-  { key: 'dessert', label: 'Dessert', imageUrl: Dessert },
+const mealRoles: { id: number; key: MealRole; label: string; imageUrl?: ImageSourcePropType }[] = [
+  { id: 0, key: 'breakfast', label: 'Breakfast', imageUrl: Breakfast },
+  { id: 1, key: 'lunch', label: 'Lunch', imageUrl: Lunch },
+  { id: 2, key: 'salad', label: 'Salad', imageUrl: Salad },
+  { id: 3, key: 'dinner', label: 'Dinner', imageUrl: Dinner },
+  { id: 4, key: 'snack', label: 'Snack', imageUrl: Snack },
+  { id: 5, key: 'dessert', label: 'Dessert', imageUrl: Dessert },
 ];
 
-const mealAims: { key: MealAim; label: string; description: string }[] = [
-  { key: 'normal', label: 'Normal', description: 'Balanced and healthy meals' },
-  { key: 'diet', label: 'Weight Loss', description: 'Lower calorie options' },
-  { key: 'bulk', label: 'Muscle Building', description: 'High protein meals' },
-  { key: 'keto', label: 'Keto', description: 'Low carb, high fat' },
-  { key: 'vegan', label: 'Vegan', description: 'Plant-based only' },
-  { key: 'vegetarian', label: 'Vegetarian', description: 'No meat options' },
+const mealAims: { id: number; key: MealAim; label: string; description: string }[] = [
+  { id: 0, key: 'normal', label: 'Normal', description: 'Balanced and healthy meals' },
+  { id: 1, key: 'diet', label: 'Weight Loss', description: 'Lower calorie options' },
+  { id: 2, key: 'bulk', label: 'Muscle Building', description: 'High protein meals' },
+  { id: 3, key: 'keto', label: 'Keto', description: 'Low carb, high fat' },
+  { id: 4, key: 'vegan', label: 'Vegan', description: 'Plant-based only' },
+  { id: 5, key: 'vegetarian', label: 'Vegetarian', description: 'No meat options' },
 ];
 
 export default function SettingsScreen() {
-  const { profile, session } = useAuthContext();
-  const { top, bottom } = useSafeAreaInsets();
-
-  // Local state for optimistic UI updates
-  const [localProfile, setLocalProfile] = useState(profile);
-
-  const { storedValue: preferences, setValue: setPreferences } = useAsyncStorage<UserPreferences>(
-    'userPreferences',
-    {
-      selectedRoles: [],
-      selectedAim: null,
-    },
-  );
+  const { top } = useSafeAreaInsets();
+  const { profile, session, refetchProfile } = useAuthContext();
 
   const measurementSheetRef = useRef<MeasurementBottomSheetRef>(null);
 
@@ -71,18 +59,22 @@ export default function SettingsScreen() {
     ),
   ).current;
 
+  console.log(profile);
+
   const toggleRole = useCallback(
-    async (role: MealRole) => {
-      const isSelected = preferences.selectedRoles.includes(role);
+    async ({ roleId, roleKey }: { roleId: number; roleKey: MealRole }) => {
+      if (!session?.user?.id) return;
+
+      const isSelected = profile.selected_meal_ids.includes(roleId);
 
       if (!isSelected) {
         Animated.sequence([
-          Animated.timing(scaleAnimations[role], {
+          Animated.timing(scaleAnimations[roleKey], {
             toValue: 0.5,
             duration: 120,
             useNativeDriver: true,
           }),
-          Animated.timing(scaleAnimations[role], {
+          Animated.timing(scaleAnimations[roleKey], {
             toValue: 1,
             duration: 180,
             useNativeDriver: true,
@@ -91,41 +83,55 @@ export default function SettingsScreen() {
       }
 
       const newRoles = isSelected
-        ? preferences.selectedRoles.filter((r) => r !== role)
-        : [...preferences.selectedRoles, role];
+        ? profile.selected_meal_ids.filter((r: number) => r !== roleId)
+        : [...profile.selected_meal_ids, roleId];
 
-      await setPreferences({
-        ...preferences,
-        selectedRoles: newRoles,
-      });
+      const { error } = await supabase
+        .from('profiles')
+        .update({ selected_meal_ids: newRoles })
+        .eq('id', session.user.id);
+
+      if (error) {
+        Alert.alert('Error', `Failed to update selected_meal_ids`);
+        throw error;
+      } else {
+        await refetchProfile();
+      }
     },
-    [preferences, scaleAnimations, setPreferences],
+    [profile.selected_meal_ids, refetchProfile, scaleAnimations, session?.user.id],
   );
 
   const toggleAim = useCallback(
-    async (aim: MealAim) => {
-      await setPreferences({
-        ...preferences,
-        selectedAim: aim,
-      });
+    async (aimId: number) => {
+      if (!session?.user?.id) return;
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({ goal_id: aimId })
+        .eq('id', session.user.id)
+        .select();
+
+      if (error) {
+        Alert.alert('Error', `Failed to update goal_id`);
+        throw error;
+      } else {
+        await refetchProfile();
+      }
     },
-    [preferences, setPreferences],
+    [refetchProfile, session?.user.id],
   );
 
   const handleMeasurementPress = useCallback(
     (type: 'height' | 'weight') => {
-      const currentValue = type === 'height' ? localProfile?.height : localProfile?.weight;
+      const currentValue = type === 'height' ? profile?.height : profile?.weight;
       measurementSheetRef.current?.open(type, currentValue || 0);
     },
-    [localProfile],
+    [profile],
   );
 
   const handleSaveMeasurement = useCallback(
     async (type: 'height' | 'weight', value: number) => {
       if (!session?.user?.id) return;
-
-      // Optimistic update
-      setLocalProfile((prev: any) => ({ ...prev, [type]: value }));
 
       const { error } = await supabase
         .from('profiles')
@@ -133,60 +139,24 @@ export default function SettingsScreen() {
         .eq('id', session.user.id);
 
       if (error) {
-        // Revert on error
-        setLocalProfile(profile);
         Alert.alert('Error', `Failed to update ${type}`);
         throw error;
       }
     },
-    [session, profile],
+    [session],
   );
-
-  const handleLogout = useCallback(() => {
-    Alert.alert('Logout', 'Are you sure you want to logout?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Logout',
-        style: 'destructive',
-        onPress: async () => {
-          await supabase.auth.signOut();
-        },
-      },
-    ]);
-  }, []);
-
-  // Update local profile when context profile changes
-  React.useEffect(() => {
-    setLocalProfile(profile);
-  }, [profile]);
 
   return (
     <>
-      <View className="flex-1 bg-neutral-50" style={{ paddingTop: top, paddingBottom: bottom }}>
+      <View className="flex-1 bg-neutral-50" style={{ paddingTop: top }}>
         <ScrollView className="flex-1 px-6">
           {/* Header */}
           <View className="mb-8">
             <Text className="text-3xl font-bold text-gray-900">Settings</Text>
             <Text className="text-gray-600 text-lg">Customize your meal preferences</Text>
           </View>
-
           {/* Profile */}
-          <View className="mb-8">
-            <View className="flex-row items-center gap-4">
-              <Image
-                source={{ uri: localProfile?.avatar_url ?? 'https://avatar.iran.liara.run/public' }}
-                className="w-16 h-16 rounded-full"
-              />
-              <View className="flex-1">
-                <Text className="text-lg font-semibold">{localProfile?.username || 'User'}</Text>
-                <Text className="text-gray-600">{localProfile?.email}</Text>
-              </View>
-              <TouchableOpacity onPress={handleLogout} activeOpacity={0.7}>
-                <LogOut size={18} color="#374151" />
-              </TouchableOpacity>
-            </View>
-          </View>
-
+          <SettingsProfileInfo />
           {/* Profile Measurements */}
           <View className="mb-8">
             <Text className="text-xl font-bold text-gray-900">Profile Measurements</Text>
@@ -198,9 +168,7 @@ export default function SettingsScreen() {
                 activeOpacity={0.7}>
                 <Text className="text-gray-600 font-medium">Height</Text>
                 <View className="flex-row items-center gap-2">
-                  <Text className="text-gray-900 font-semibold">
-                    {localProfile?.height || '--'} cm
-                  </Text>
+                  <Text className="text-gray-900 font-semibold">{profile?.height || '--'} cm</Text>
                   <Text className="text-gray-400">›</Text>
                 </View>
               </TouchableOpacity>
@@ -211,9 +179,7 @@ export default function SettingsScreen() {
                 activeOpacity={0.7}>
                 <Text className="text-gray-600 font-medium">Weight</Text>
                 <View className="flex-row items-center gap-2">
-                  <Text className="text-gray-900 font-semibold">
-                    {localProfile?.weight || '--'} kg
-                  </Text>
+                  <Text className="text-gray-900 font-semibold">{profile?.weight || '--'} kg</Text>
                   <Text className="text-gray-400">›</Text>
                 </View>
               </TouchableOpacity>
@@ -226,13 +192,13 @@ export default function SettingsScreen() {
             <Text className="text-gray-600 mb-4">When do you want meal suggestions?</Text>
 
             <View className="flex-row justify-between">
-              {mealRoles.map(({ key, label, imageUrl }) => {
-                const selected = preferences.selectedRoles.includes(key);
+              {mealRoles.map(({ id, key, label, imageUrl }) => {
+                const selected = profile.selected_meal_ids.includes(id);
 
                 return (
                   <TouchableOpacity
                     key={key}
-                    onPress={() => toggleRole(key)}
+                    onPress={() => toggleRole({ roleId: id, roleKey: key })}
                     className="items-center"
                     activeOpacity={0.8}>
                     <Animated.View
@@ -266,12 +232,12 @@ export default function SettingsScreen() {
             <Text className="text-xl font-bold text-gray-900">Dietary Goals</Text>
             <Text className="text-gray-600 mb-4">What are your nutritional goals?</Text>
 
-            {mealAims.map(({ key, label, description }) => (
+            {mealAims.map(({ id, key, label, description }) => (
               <TouchableOpacity
                 key={key}
-                onPress={() => toggleAim(key)}
+                onPress={() => toggleAim(id)}
                 className={`p-4 mb-3 rounded-2xl border-2 ${
-                  preferences.selectedAim === key
+                  profile.goal_id === id
                     ? 'bg-orange-50 border-orange-500'
                     : 'bg-white border-gray-200'
                 }`}

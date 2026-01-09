@@ -12,9 +12,8 @@ function AppLayout() {
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="splash" />
-      <Stack.Protected guard={!!isLoggedIn}>
-        <Stack.Screen name="/(tabs)" />
+      <Stack.Protected guard={isLoggedIn}>
+        <Stack.Screen name="(tabs)" />
         <Stack.Screen name="recipe/[id]" options={{ presentation: 'modal' }} />
         <Stack.Screen name="chat/[recipeId]" options={{ presentation: 'modal' }} />
       </Stack.Protected>
