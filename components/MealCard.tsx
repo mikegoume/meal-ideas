@@ -1,4 +1,4 @@
-import { Meal } from '@/types/meal';
+import { IRecipe } from '@/types/recipe';
 import { Clock, Flame, Users } from 'lucide-react-native';
 import React, { useEffect } from 'react';
 import { Dimensions, Image, StyleSheet, Text, View } from 'react-native';
@@ -13,7 +13,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 interface MealCardProps {
-  meal: Meal;
+  meal: IRecipe;
   index: number;
   totalcards: number;
   panHandlers: any;
@@ -101,19 +101,21 @@ export function MealCard({
 
       <View className="absolute top-4 right-4">
         <View className="bg-black/20 px-3 py-1 rounded-full">
-          <Text className="text-white text-sm font-semibold capitalize">{meal.difficulty}</Text>
+          <Text className="text-white text-sm font-semibold capitalize">{meal.vegetarian}</Text>
         </View>
       </View>
 
       <View className="p-6 flex-1 flex-col gap-3">
-        <Text className="text-2xl font-bold text-gray-900">{meal.name}</Text>
+        <Text className="text-2xl font-bold text-gray-900">{meal.title}</Text>
 
-        <Text className="text-gray-600 text-base leading-6">{meal.description}</Text>
+        <Text numberOfLines={6} className="text-gray-600 text-base leading-6">
+          {meal.summary}
+        </Text>
 
         <View className="flex-row justify-between items-center">
           <View className="flex-row items-center">
             <Clock size={16} color="#6b7280" />
-            <Text className="text-gray-500 ml-2 text-sm">{meal.cookingTime} min</Text>
+            <Text className="text-gray-500 ml-2 text-sm">{meal.readyInMinutes} min</Text>
           </View>
 
           <View className="flex-row items-center">
@@ -125,17 +127,19 @@ export function MealCard({
 
           <View className="flex-row items-center">
             <Flame size={16} color="#6b7280" />
-            <Text className="text-gray-500 ml-2 text-sm">{meal.calories} cal</Text>
+            <Text className="text-gray-500 ml-2 text-sm">
+              {meal.nutrition.nutrients[0].amount} {meal.nutrition.nutrients[0].unit}
+            </Text>
           </View>
         </View>
 
-        <View className="flex-row flex-wrap gap-2">
+        {/* <View className="flex-row flex-wrap gap-2">
           {meal.tags.slice(0, 3).map((tag) => (
             <View key={tag} className="bg-orange-100 px-3 py-1 rounded-full">
               <Text className="text-orange-600 text-xs font-medium">#{tag}</Text>
             </View>
           ))}
-        </View>
+        </View> */}
       </View>
     </Animated.View>
   );
@@ -144,7 +148,7 @@ export function MealCard({
 const styles = StyleSheet.create({
   card: {
     width: screenWidth * 0.9,
-    height: screenHeight * 0.5,
+    height: screenHeight * 0.65,
     backgroundColor: 'white',
     borderRadius: 15,
     position: 'absolute',
@@ -158,7 +162,7 @@ const styles = StyleSheet.create({
   },
   image: {
     width: '100%',
-    height: 220,
+    height: screenHeight * 0.325,
     resizeMode: 'cover',
   },
 });

@@ -8,3 +8,14 @@ export async function getMeals() {
     console.error(error);
   }
 }
+
+export async function getRecipesFromSpoonacular(params) {
+  try {
+    const res = await axios.get('https://api.spoonacular.com/recipes/complexSearch', {
+      params,
+    });
+    return res.data;
+  } catch (error) {
+    console.error(error);
+  }
+}

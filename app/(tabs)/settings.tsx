@@ -8,6 +8,7 @@ import {
   MeasurementBottomSheet,
   MeasurementBottomSheetRef,
 } from '@/components/MeasurementBottomSheet';
+import SettingsProfileInfo from '@/components/molecules/SettingsProfileInfo';
 import { useAuthContext } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { MealAim, MealRole } from '@/types/meal';
@@ -23,7 +24,6 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import SettingsProfileInfo from '@/components/molecules/SettingsProfileInfo';
 
 const mealRoles: { id: number; key: MealRole; label: string; imageUrl?: ImageSourcePropType }[] = [
   { id: 0, key: 'breakfast', label: 'Breakfast', imageUrl: Breakfast },
@@ -58,8 +58,6 @@ export default function SettingsScreen() {
       {} as Record<MealRole, Animated.Value>,
     ),
   ).current;
-
-  console.log(profile);
 
   const toggleRole = useCallback(
     async ({ roleId, roleKey }: { roleId: number; roleKey: MealRole }) => {
