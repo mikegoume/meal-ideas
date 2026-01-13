@@ -33,14 +33,12 @@ export default function HomeScreen() {
   //   instructionsRequired: 'true',
   // });
 
-  // const recipesQuery = useQuery({
+  // const { data } = useQuery({
   //   queryKey: ['recipes'],
   //   queryFn: () => getRecipesFromSpoonacular(params),
   // });
 
-  // const recipes = recipesQuery.data || [];
-
-  // console.log(recipes);
+  // console.log(data);
 
   return (
     <View className="flex flex-1 bg-neutral-50" style={{ paddingTop: top, paddingBottom: bottom }}>

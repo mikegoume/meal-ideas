@@ -1,4 +1,5 @@
-import { sampleMeals } from '@/assets/mock/meals';
+import recipes from '@/assets/mock/recipes.json';
+import { IRecipe } from '@/types/recipe';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, Clock, Flame, MessageCircle, Users } from 'lucide-react-native';
 import React from 'react';
@@ -7,7 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function RecipeScreen() {
   const { id } = useLocalSearchParams();
-  const meal = sampleMeals.find((m) => m.id === id);
+  const meal = recipes.results.find((recipe) => recipe.id === parseInt(id as string, 10));
 
   if (!meal) {
     return (
@@ -43,14 +44,14 @@ export default function RecipeScreen() {
         <Image source={{ uri: meal.image }} className="w-full h-64" />
 
         <View className="p-6">
-          <Text className="text-3xl font-bold text-gray-900 mb-2">{meal.name}</Text>
+          <Text className="text-3xl font-bold text-gray-900 mb-2">{meal.title}</Text>
 
-          <Text className="text-gray-600 text-lg mb-4 leading-6">{meal.description}</Text>
+          <Text className="text-gray-600 text-lg mb-4 leading-6">{meal.summary}</Text>
 
           <View className="flex-row items-center justify-between mb-6">
             <View className="flex-row items-center">
               <Clock size={20} color="#6b7280" />
-              <Text className="text-gray-500 ml-2">{meal.cookingTime} minutes</Text>
+              <Text className="text-gray-500 ml-2">{meal.readyInMinutes} minutes</Text>
             </View>
 
             <View className="flex-row items-center">
@@ -62,11 +63,13 @@ export default function RecipeScreen() {
 
             <View className="flex-row items-center">
               <Flame size={20} color="#6b7280" />
-              <Text className="text-gray-500 ml-2">{meal.calories} cal</Text>
+              <Text className="text-gray-500 ml-2">
+                {meal.nutrition.nutrients[0].amount} {meal.nutrition.nutrients[0].unit}
+              </Text>
             </View>
           </View>
 
-          <View className="flex-row items-center mb-6">
+          {/* <View className="flex-row items-center mb-6">
             <View className={`px-3 py-1 rounded-full ${difficultyColors[meal.difficulty]}`}>
               <Text className="font-medium text-sm">{meal.difficulty}</Text>
             </View>
@@ -78,13 +81,13 @@ export default function RecipeScreen() {
                 </View>
               ))}
             </View>
-          </View>
+          </View> */}
 
           <Text className="text-2xl font-bold text-gray-900 mb-4">Ingredients</Text>
 
-          <View className="space-y-3 mb-8">
-            {meal.ingredients.map((ingredient, index) => (
-              <View key={index} className="flex-row items-center bg-gray-50 p-3 rounded-lg">
+          <View className="flex flex-col gap-3 mb-8">
+            {(meal as IRecipe).nutrition.ingredients.map((ingredient) => (
+              <View key={ingredient.id} className="flex-row items-center">
                 <View className="w-6 h-6 bg-orange-500 rounded-full items-center justify-center mr-3">
                   <Text className="text-white font-bold text-xs">✓</Text>
                 </View>
@@ -101,13 +104,26 @@ export default function RecipeScreen() {
           <Text className="text-2xl font-bold text-gray-900 mb-4">Instructions</Text>
 
           <View className="space-y-4 mb-8">
-            {meal.instructions.map((instruction, index) => (
-              <View key={index} className="flex-row">
-                <View className="w-8 h-8 bg-orange-500 rounded-full items-center justify-center mr-4 mt-1">
-                  <Text className="text-white font-bold text-sm">{index + 1}</Text>
+            {(meal as IRecipe).analyzedInstructions.map((instruction, index) => (
+              <>
+                <View key={index} className="flex-row">
+                  {instruction.name !== '' && (
+                    <Text className="flex-1 text-gray-900 text-base leading-6 pt-1">
+                      {instruction.name}
+                    </Text>
+                  )}
                 </View>
-                <Text className="flex-1 text-gray-900 text-base leading-6 pt-1">{instruction}</Text>
-              </View>
+                <View className="flex flex-col gap-2">
+                  {instruction.steps.map((step, stepIndex) => (
+                    <View key={stepIndex} className="flex-row items-start">
+                      <View className="w-6 h-6 bg-orange-500 rounded-full items-center justify-center mr-3">
+                        <Text className="text-white font-bold text-xs">{stepIndex + 1}</Text>
+                      </View>
+                      <Text className="flex-1 text-gray-900 text-base leading-6">{step.step}</Text>
+                    </View>
+                  ))}
+                </View>
+              </>
             ))}
           </View>
 

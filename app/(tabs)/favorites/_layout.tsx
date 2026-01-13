@@ -9,7 +9,7 @@ const FavoritesLayout = () => {
         <Stack.Screen
           name="index"
           options={{
-            headerShown: true,
+            headerShown: false,
             headerTitle: 'Your Favorites',
             headerLargeTitle: true,
             headerTransparent: true,

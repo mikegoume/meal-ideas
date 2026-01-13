@@ -31,6 +31,7 @@ export interface IRecipe {
   dishTypes: string[];
   diets: string[];
   occasions: string[];
+  analyzedInstructions: IInstruction[];
   spoonacularScore: number;
   spoonacularSourceUrl: string;
 }
@@ -80,4 +81,20 @@ interface ICaloricBreakdown {
 interface IWeightPerServing {
   amount: number;
   unit: string;
+}
+
+interface IInstruction {
+  name: string;
+  steps: IInstructionStep[];
+}
+
+interface IInstructionStep {
+  number: number;
+  step: string;
+  ingredients: IIngridient[];
+  equipment: IIngridient[];
+  length?: {
+    number: number;
+    unit: string;
+  };
 }

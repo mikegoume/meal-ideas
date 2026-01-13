@@ -1,37 +1,52 @@
-import { sampleMeals } from '@/assets/mock/meals';
-import AnimatedFlatList from '@/components/AnimatedFlatList';
-import { useAsyncStorage } from '@/hooks/useAsyncStorage';
+import { getFavorites } from '@/api/favorites';
+import recipes from '@/assets/mock/recipes.json';
+import ListItem from '@/components/ListItem';
+import { useAuthContext } from '@/hooks/useAuth';
+import { IRecipe } from '@/types/recipe';
+import { FlashList } from '@shopify/flash-list';
+import { useQuery } from '@tanstack/react-query';
 import React from 'react';
-import { StatusBar, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function FavoritesScreen() {
-  const { storedValue: favoriteMealIds } = useAsyncStorage<string[]>('favoriteMeals', []);
+  const { top } = useSafeAreaInsets();
+  const { session } = useAuthContext();
 
-  const favoriteMeals = sampleMeals.filter((meal) => favoriteMealIds.includes(meal.id));
+  const { data } = useQuery({
+    queryKey: ['favorites'],
+    queryFn: () => getFavorites(session?.user.id!),
+  });
 
-  if (favoriteMeals.length === 0) {
-    return (
-      <SafeAreaView className="flex-1 bg-gray-50">
-        <View className="flex-1 items-center justify-center px-6">
-          <Text className="text-6xl mb-4">❤️</Text>
-          <Text className="text-2xl font-bold text-gray-900 text-center mb-2">
-            No favorites yet
-          </Text>
-          <Text className="text-gray-600 text-center">
-            Start swiping on meals to add them to your favorites!
-          </Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
+  const likedRecipeIds = data?.map((recipe) => recipe.recipe_id) || [];
+  const likedRecipes = recipes.results.filter((recipe: IRecipe) =>
+    likedRecipeIds.includes(recipe.id),
+  );
 
-  return <AnimatedFlatList style={styles.flatListStyle} data={favoriteMeals} />;
+  return (
+    <View className="flex-1 bg-neutral-50" style={{ paddingTop: top }}>
+      <FlashList
+        contentContainerClassName={`mx-6`}
+        ListHeaderComponent={() => (
+          <View className="mb-8">
+            <Text className="text-3xl font-bold text-gray-900">Favorites</Text>
+            <Text className="text-gray-600 text-lg">Access your favorite recipes</Text>
+          </View>
+        )}
+        ListEmptyComponent={() => (
+          <View className="flex-1 items-center justify-center">
+            <Text className="text-6xl mb-4">❤️</Text>
+            <Text className="text-2xl font-bold text-gray-900 text-center mb-2">
+              No favorites yet
+            </Text>
+            <Text className="text-gray-600 text-center">
+              Start swiping on meals to add them to your favorites!
+            </Text>
+          </View>
+        )}
+        data={likedRecipes}
+        renderItem={({ item }) => <ListItem item={item} />}
+      />
+    </View>
+  );
 }
-
-const styles = StyleSheet.create({
-  flatListStyle: {
-    marginTop: (StatusBar?.currentHeight || 42) + 20 * 2 + 80,
-    paddingHorizontal: 15,
-  },
-});
