@@ -20,7 +20,7 @@ export interface Ingredient {
   unit: string;
 }
 
-export type MealRole = 'breakfast' | 'lunch' | 'dinner' | 'snack' | 'dessert' | 'salad';
+export type MealRole = 'for you' | 'breakfast' | 'lunch' | 'dinner' | 'snack' | 'dessert' | 'salad';
 export type MealAim = 'normal' | 'diet' | 'bulk' | 'keto' | 'vegan' | 'vegetarian' | null;
 
 export interface UserPreferences {
