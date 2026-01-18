@@ -1,45 +1,24 @@
-import { Tabs } from 'expo-router';
-import { Heart, Home, Settings } from 'lucide-react-native';
+import { Icon, Label, NativeTabs } from 'expo-router/unstable-native-tabs';
+import React from 'react';
 
 export default function TabLayout() {
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: '#f97316',
-        tabBarInactiveTintColor: '#6b7280',
-        tabBarStyle: {
-          backgroundColor: '#ffffff',
-          borderTopWidth: 1,
-          borderTopColor: '#e5e7eb',
-          paddingBottom: 8,
-          paddingTop: 8,
-          height: 70,
-        },
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          headerShown: false,
-          title: 'Home',
-          tabBarIcon: ({ size, color }) => <Home size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="favorites"
-        options={{
-          headerShown: false,
-          title: 'Favorites',
-          tabBarIcon: ({ size, color }) => <Heart size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="settings"
-        options={{
-          headerShown: false,
-          title: 'Settings',
-          tabBarIcon: ({ size, color }) => <Settings size={size} color={color} />,
-        }}
-      />
-    </Tabs>
+    <NativeTabs>
+      <NativeTabs.Trigger name="index">
+        <Label>Home</Label>
+        <Icon sf={'house.fill'} drawable="ic_menu_mylocation" />
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="favorites">
+        <Label>Favorites</Label>
+        <Icon sf={'heart.fill'} drawable="ic_menu_mylocation" />
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="settings">
+        <Label>Settings</Label>
+        <Icon
+          sf={'gearshape.arrow.trianglehead.2.clockwise.rotate.90'}
+          drawable="ic_menu_mylocation"
+        />
+      </NativeTabs.Trigger>
+    </NativeTabs>
   );
 }
